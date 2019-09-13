@@ -1,9 +1,12 @@
 <div class="card" style="width: 25rem">
   <div class="card-body">
-    <form [formGroup]="formTemplate">
+    <form [formGroup]="formTemplate" (submit)="onSubmit(formTemplate.value)">
+      <div class="text-center">
+        <img [src]="imageSrc" width="350px" height="250px" (click)="fileUploader.click()">
+      </div>
       <div class="form-group">
         <label>Select file</label>
-        <input type="file" class="form-control" formControlName="imageUrl">
+        <input type="file" class="form-control" formControlName="imageUrl" #fileUploader (change)="showPreview($event)">
       </div>
       <div class="form-group">
         <input class="form-control" formControlName="caption" placeholder="Caption">
