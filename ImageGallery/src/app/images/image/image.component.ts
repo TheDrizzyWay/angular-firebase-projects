@@ -1,6 +1,9 @@
 import { Component, OnInit } from '@angular/core';
-import { FormControl, FormGroup } from '@angular/forms';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
+import { AngularFireStorage } from '@angular/fire/storage';
+import { finalize } from 'rxjs/operators';
+import { ImageService } from '../../shared/image.service';
 
 @Component({
   selector: 'app-image',
@@ -11,18 +14,22 @@ export class ImageComponent implements OnInit {
   formTemplate: FormGroup;
   imageSrc: string | SafeUrl;
   selectedImage: any;
+  isSubmitted: boolean;
 
-  constructor(private sanitizer: DomSanitizer) {
+  constructor(
+    private sanitizer: DomSanitizer,
+    private storage: AngularFireStorage,
+    private imgService: ImageService
+    ) {
     this.formTemplate = new FormGroup({
-      caption: new FormControl(''),
+      caption: new FormControl('', Validators.required),
       category: new FormControl(''),
-      imageUrl: new FormControl('')
+      imageUrl: new FormControl('', Validators.required)
     });
-    this.imageSrc = '/assets/images/image_placeholder.png';
-    this.selectedImage = null;
   }
 
   ngOnInit() {
+    this.setDefaults();
   }
 
   showPreview(event: any): void {
@@ -35,8 +42,39 @@ export class ImageComponent implements OnInit {
     }
   }
 
-  onSubmit() {
+  get formControls(): object {
+    return this.formTemplate.controls;
+  }
 
+  onSubmit(formValue) {
+    this.isSubmitted = true;
+    if (this.formTemplate.valid) {
+      const filePath = `${formValue.category}/${this.selectedImage.name}_${new Date().getTime()}`;
+      const fileRef = this.storage.ref(filePath);
+      this.storage.upload(filePath, this.selectedImage)
+        .snapshotChanges().pipe(
+          finalize(() => {
+            fileRef.getDownloadURL().subscribe(url => {
+              formValue.imageUrl = url;
+              this.imgService.insertImageDetails(formValue);
+              this.resetForm();
+            });
+          })
+        ).subscribe();
+    }
+  }
+
+  resetForm(): void {
+    this.formTemplate.reset({
+      caption: '', category: 'Buildings', imageUrl: ''
+    });
+    this.setDefaults();
+  }
+
+  setDefaults(): void {
+    this.imageSrc = '/assets/images/image_placeholder.png';
+    this.selectedImage = null;
+    this.isSubmitted = false;
   }
 
 }

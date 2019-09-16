@@ -6,20 +6,27 @@
       </div>
       <div class="form-group">
         <label>Select file</label>
-        <input type="file" class="form-control" formControlName="imageUrl" #fileUploader (change)="showPreview($event)">
+        <input type="file" accept="image/*" class="form-control" formControlName="imageUrl" #fileUploader (change)="showPreview($event)">
+        <div class="text-danger" *ngIf="isSubmitted && !!formControls.imageUrl.hasError('required')">This field is required</div>
       </div>
       <div class="form-group">
         <input class="form-control" formControlName="caption" placeholder="Caption">
+        <div class="text-danger" *ngIf="isSubmitted && !!formControls.caption.hasError('required')">This field is required</div>
       </div>
       <div class="form-group">
         <select class="form-control" formControlName="category">
           <option value="Buildings" selected>Buildings</option>
-          <option value="Beaches">Beaches</option>
+          <option value="Animals">Animals</option>
           <option value="Vehicles">Vehicles</option>
         </select>
       </div>
-      <div class="form-group">
-        <button type="submit" class="btn btn-success float-right">Submit</button>
+      <div class="form-row">
+          <div class="form-group col-md-6">
+            <a routerLink="/image/list" class="btn btn-primary btn-block float-right">Gallery</a>
+          </div>
+          <div class="form-group col-md-6">
+            <button type="submit" class="btn btn-success btn-block float-right">Submit</button>
+          </div>
       </div>
     </form>
   </div>
